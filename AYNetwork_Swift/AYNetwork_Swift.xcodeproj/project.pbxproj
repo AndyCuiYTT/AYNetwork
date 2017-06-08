@@ -13,6 +13,7 @@
 		3B21688B1EE7980C005C79B0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B21688A1EE7980C005C79B0 /* Assets.xcassets */; };
 		3B21688E1EE7980C005C79B0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B21688C1EE7980C005C79B0 /* LaunchScreen.storyboard */; };
 		3B2168991EE7980D005C79B0 /* AYNetwork_SwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2168981EE7980D005C79B0 /* AYNetwork_SwiftUITests.swift */; };
+		3B3A040D1EE8EA230008C989 /* timg.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 3B3A040C1EE8EA230008C989 /* timg.jpeg */; };
 		3BCBEC061EE7E1AC00C2AAA9 /* AYNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BCBEC051EE7E1AC00C2AAA9 /* AYNetworkManager.swift */; };
 		6218ABFDEAF80AFE58E3B14D /* Pods_AYNetwork_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24E0B99210CE5C8E0F03CAD9 /* Pods_AYNetwork_Swift.framework */; };
 /* End PBXBuildFile section */
@@ -41,6 +42,7 @@
 		3B2168941EE7980D005C79B0 /* AYNetwork_SwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AYNetwork_SwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B2168981EE7980D005C79B0 /* AYNetwork_SwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AYNetwork_SwiftUITests.swift; sourceTree = "<group>"; };
 		3B21689A1EE7980D005C79B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3B3A040C1EE8EA230008C989 /* timg.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = timg.jpeg; sourceTree = "<group>"; };
 		3BCBEC051EE7E1AC00C2AAA9 /* AYNetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AYNetworkManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,6 +76,7 @@
 		3B2168771EE7980C005C79B0 = {
 			isa = PBXGroup;
 			children = (
+				3B3A040C1EE8EA230008C989 /* timg.jpeg */,
 				3BCBEC041EE7E17100C2AAA9 /* AYNetwork */,
 				3B2168821EE7980C005C79B0 /* AYNetwork_Swift */,
 				3B2168971EE7980D005C79B0 /* AYNetwork_SwiftUITests */,
@@ -221,6 +224,7 @@
 			files = (
 				3B21688E1EE7980C005C79B0 /* LaunchScreen.storyboard in Resources */,
 				3B21688B1EE7980C005C79B0 /* Assets.xcassets in Resources */,
+				3B3A040D1EE8EA230008C989 /* timg.jpeg in Resources */,
 				3B2168891EE7980C005C79B0 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

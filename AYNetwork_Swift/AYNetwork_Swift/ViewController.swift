@@ -19,25 +19,41 @@ class ViewController: UIViewController {
     }
     @IBAction func loadData(_ sender: UIButton) {
         
-//        
+        
 //        AYNetworkManager.ay_get("http://localhost:8080/MavenDemo/userApi?method=getAllUsers", result: { (resultData) in
 //            print(resultData)
+//            
+//            print(Thread.current)
+//
 //        }) { (failData) in
 //            print(failData)
 //        }
+//
 //        
+//        AYNetworkManager.ay_downloadFile("https://github.com/AndyCuiYTT/AYWebImage/archive/master.zip", fileURL: URL.init(fileURLWithPath: self.ay_getCachePath()), progress: { (progress) in
+//            print(Thread.current)
+//
+//            print(progress);
+//            
+//            
+//        }, result: { (resultData) in
+//            
+//               print(Thread.current)
+//            print(resultData);
+//        }) { (failData) in
+//            print(failData)
+//            
+//        }
+
+        let img: UIImage = UIImage.init(named: "timg.jpeg")!
+        let data: Data = UIImagePNGRepresentation(img)!
         
-        AYNetworkManager.ay_download("https://github.com/AndyCuiYTT/AYWebImage/archive/master.zip", fileURL: URL.init(fileURLWithPath: self.ay_getCachePath()), progress: { (progress) in
-            
-            print(progress);
-            
-            
-        }, result: { (resultData) in
-            print(resultData);
-        }) { (failData) in
-            print(failData)
-            
+        AYNetworkManager.ay_uploadFile("http://localhost:8080/MavenDemo/userApi/uploadfile", ["name":"Angelo","age":"12","id":"1"],filesData: [data,data], result: { (data) in
+            print(data)
+        }) { (data) in
+            print(data)
         }
+        
         
         
     }
