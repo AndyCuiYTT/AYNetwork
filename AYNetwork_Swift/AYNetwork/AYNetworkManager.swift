@@ -72,7 +72,7 @@ class AYNetworkManager: NSObject {
     ///   - progress: 下载进度
     ///   - result: 成功返回数据
     ///   - fail: 失败返回数据
-    static func ay_downloadFile(_ urlStr: String, _ method: HTTPMethod? = .get, _ param: ayParams? = nil, fileURL: URL, progress: @escaping (Any)->Void, result: @escaping (Any)->Void, fail: @escaping (Any)->Void) {
+    static func ay_downloadFile(_ urlStr: String, _ method: HTTPMethod? = .get, _ param: ayParams? = nil, fileURL: URL, progress: @escaping (Progress)->Void, result: @escaping (Any)->Void, fail: @escaping (Any)->Void) {
         
         //拼接文件保存地址
         let destination: DownloadRequest.DownloadFileDestination = { _, response in
@@ -92,14 +92,15 @@ class AYNetworkManager: NSObject {
     
     /// 文件上传
     ///
-    /// 上传文件时注意文件名与 mimeType 
+    /// 上传文件时注意文件名与 mimeType
     /// - Parameters:
     ///   - urlStr: 上传地址
     ///   - param: 上传参数
-    ///   - filesData: 上传数据 data 类型
+    ///   - filesData: 上传数据数组 data 类型
+    ///   - progress: 上传进度
     ///   - result: 成功返回数据
     ///   - fail: 失败返回数据
-    static func ay_uploadFile(_ urlStr: String, _ param:ayParams? = nil,filesData: [Data], result: @escaping (Any)->Void, fail: @escaping (Any)->Void) {
+    static func ay_uploadFile(_ urlStr: String, _ param:ayParams? = nil,filesData: [Data], progress:@escaping (Progress)->Void, result: @escaping (Any)->Void, fail: @escaping (Any)->Void) {
         Alamofire.upload(multipartFormData: { (formData) in
 
             for data:Data in filesData {
@@ -113,6 +114,9 @@ class AYNetworkManager: NSObject {
         }, to: urlStr) { (encodingResult) in
             switch encodingResult{
             case .success(request: let upload,_,_):
+                upload.uploadProgress(closure: { (progres) in
+                    progress(progres)
+                })
                 upload.responseJSON(completionHandler: { (response) in
                     if let value = response.result.value as? [String : AnyObject]{
                         result(value)

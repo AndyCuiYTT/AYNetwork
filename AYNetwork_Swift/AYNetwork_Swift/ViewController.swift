@@ -20,39 +20,45 @@ class ViewController: UIViewController {
     @IBAction func loadData(_ sender: UIButton) {
         
         
-//        AYNetworkManager.ay_get("http://localhost:8080/MavenDemo/userApi?method=getAllUsers", result: { (resultData) in
-//            print(resultData)
-//            
-//            print(Thread.current)
-//
-//        }) { (failData) in
-//            print(failData)
-//        }
-//
-//        
-//        AYNetworkManager.ay_downloadFile("https://github.com/AndyCuiYTT/AYWebImage/archive/master.zip", fileURL: URL.init(fileURLWithPath: self.ay_getCachePath()), progress: { (progress) in
-//            print(Thread.current)
-//
-//            print(progress);
-//            
-//            
-//        }, result: { (resultData) in
-//            
-//               print(Thread.current)
-//            print(resultData);
-//        }) { (failData) in
-//            print(failData)
-//            
-//        }
+        // post 请求测试
+        AYNetworkManager.ay_post("http://localhost:8080/MavenDemo/userApi", ["method":"getAllUsers"], result: { (resultData) in
+            print(resultData)
+            
+            print(Thread.current)
 
+        }) { (failData) in
+            print(failData)
+        }
+
+        
+        /// 文件下载测试
+        AYNetworkManager.ay_downloadFile("https://github.com/AndyCuiYTT/AYWebImage/archive/master.zip", fileURL: URL.init(fileURLWithPath: self.ay_getCachePath()), progress: { (progress) in
+            print(Thread.current)
+
+            print(progress);
+            
+            
+        }, result: { (resultData) in
+            
+               print(Thread.current)
+            print(resultData);
+        }) { (failData) in
+            print(failData)
+            
+        }
+
+        
+        /// 文件上传测试
         let img: UIImage = UIImage.init(named: "timg.jpeg")!
         let data: Data = UIImagePNGRepresentation(img)!
-        
-        AYNetworkManager.ay_uploadFile("http://localhost:8080/MavenDemo/userApi/uploadfile", ["name":"Angelo","age":"12","id":"1"],filesData: [data,data], result: { (data) in
+        AYNetworkManager.ay_uploadFile("http://localhost:8080/MavenDemo/userApi", ["method":"uploadfile","name":"Angelo","age":"12","id":"1"],filesData: [data,data], progress:{ (progress) in
+            print("\(progress.completedUnitCount)-\(progress.totalUnitCount)")
+        }, result: { (data) in
             print(data)
         }) { (data) in
             print(data)
         }
+        
         
         
         
