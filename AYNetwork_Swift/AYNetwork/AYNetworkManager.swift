@@ -13,6 +13,8 @@
  *  该类基于 Alamofire ,使用时请先导入 Alamofire 库
  *
  *  该类所有方法均为静态方法,使用时不用实例化对象,可直接调用
+ *
+ *  如果与 HandyJSON 结合使用,将 responseJSON 换为 responseString
  */
 
 import UIKit
