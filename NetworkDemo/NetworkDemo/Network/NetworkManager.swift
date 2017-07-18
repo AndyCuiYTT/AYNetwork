@@ -15,16 +15,58 @@ import UIKit
 class NetworkManager: NSObject {
     
     
-    class func networkPost(_ urlStr: String, params: [String : String], result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
+    /// post 请求
+    ///
+    /// - Parameters:
+    ///   - urlStr: 请求地址
+    ///   - params: 请求参数
+    ///   - result: 返回结果
+    ///   - fail: 失败
+    class func post(_ urlStr: String, params: [String : String], result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
         var request = URLRequest.init(url: URL(string: urlStr)!)
         request.timeoutInterval = NetworkConfig.timeoutInterval
         request.httpMethod = "POST"
         
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: params, options: .prettyPrinted)
-        } catch  {
-            print(error)
+        var paramStr = String()
+        for (key , value) in params {
+            paramStr.append("\(key)=\(value)&")
         }
+        paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
+        
+        request.httpBody = paramStr.data(using: .utf8)
+        let session = URLSession(configuration: NetworkConfig.configuration)
+        let task = session.dataTask(with: request) { (data, response, error) in
+            if error == nil {
+                if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
+                    result(value)
+                }else {
+                    result (String.init(data: data!, encoding: .utf8)!)
+                }
+            }else {
+                fail(error.debugDescription)
+            }
+        }
+        task.resume()
+    }
+    
+    
+    /// get 请求
+    ///
+    /// - Parameters:
+    ///   - urlStr: 请求地址
+    ///   - params: 请求参数
+    ///   - result: 返回结果
+    ///   - fail: 失败
+    class func get(_ urlStr: String, params: [String : String], result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
+        
+        var paramStr = String()
+        for (key , value) in params {
+            paramStr.append("\(key)=\(value)&")
+        }
+        paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
+        var request = URLRequest.init(url: URL(string: urlStr + "?" + paramStr)!)
+        request.timeoutInterval = NetworkConfig.timeoutInterval
+        request.httpMethod = "GET"
         
         let session = URLSession(configuration: NetworkConfig.configuration)
         let task = session.dataTask(with: request) { (data, response, error) in
@@ -34,20 +76,26 @@ class NetworkManager: NSObject {
                 }else {
                     result (String.init(data: data!, encoding: .utf8)!)
                 }
-                
             }else {
                 fail(error.debugDescription)
             }
         }
         task.resume()
     }
+
     
     
-    class func networkDownload(_ urlStr: String, fileName: String, result: @escaping (String) -> Void, fail: @escaping (Any) -> Void) {
+    /// 文件下载
+    ///
+    /// - Parameters:
+    ///   - urlStr: 下载地址
+    ///   - fileName: 文件名
+    ///   - result: 文件缓存路径
+    ///   - fail: 失败
+    class func download(_ urlStr: String, fileName: String, result: @escaping (String) -> Void, fail: @escaping (Any) -> Void) {
         
         let request = URLRequest.init(url: URL(string: urlStr)!)
         let session = URLSession(configuration: NetworkConfig.configuration)
-        
         let task = session.downloadTask(with: request) { (pathUrl, response, error) in
             if error == nil {
                 if let filePath: String = pathUrl?.path {
@@ -60,7 +108,6 @@ class NetworkManager: NSObject {
                 fail(error.debugDescription)
             }
         }
-        
         task.resume()
     }
     
@@ -76,7 +123,7 @@ class NetworkManager: NSObject {
     ///   - contentType: 文件类型
     ///   - result: 返回数据
     ///   - fail: 失败
-    class func networkUpload(_ urlStr: String, params: [String : String], filesData: [Data], fileName: String, fileExtensions:String, contentType: String,result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
+    class func upload(_ urlStr: String, params: [String : String], filesData: [Data], fileName: String, fileExtensions:String, contentType: String,result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
         let boundary = "*****" // 分界标识
         var bodyData = Data()
         
@@ -103,6 +150,7 @@ class NetworkManager: NSObject {
         request.addValue("\(bodyData.count)", forHTTPHeaderField: "Content-Length")
         request.httpMethod = "POST"
         request.httpBody = bodyData
+        request.timeoutInterval = NetworkConfig.timeoutInterval
         
         // 发起请求
         let session = URLSession(configuration: NetworkConfig.configuration)
@@ -114,7 +162,7 @@ class NetworkManager: NSObject {
                     result (String.init(data: data!, encoding: .utf8)!)
                 }
             }else {
-                fail(error?.localizedDescription ?? "error")
+                fail(error.debugDescription)
             }
         }
         task.resume()

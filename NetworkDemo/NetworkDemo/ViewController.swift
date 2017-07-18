@@ -16,18 +16,27 @@ class ViewController: UIViewController {
         
         
         
-        Bundle.main.path(forResource: "123", ofType: "zip")
+//        Bundle.main.path(forResource: "123", ofType: "zip")
+//        
+//        
+//        let data = try! Data(contentsOf: URL(fileURLWithPath: Bundle.main.path(forResource: "123", ofType: "png")!))
+//        
+//        print(data)
+//        
+//        NetworkManager.networkUpload("http://localhost:8080/MavenDemo/userApi", params: ["id":"12", "method":"uploadfile","dddd":"sddssd"], filesData: [data,data,data,data], fileName: "image", fileExtensions: "png", contentType: "image/png", result: { (data) in
+//            print(data)
+//        }) { (error) in
+//            print(error)
+//        }
         
         
-        let data = try! Data(contentsOf: URL(fileURLWithPath: Bundle.main.path(forResource: "123", ofType: "png")!))
-        
-        print(data)
-        
-        NetworkManager.networkUpload("http://localhost:8080/MavenDemo/userApi", params: ["id":"12", "method":"uploadfile","dddd":"sddssd"], filesData: [data,data,data,data], fileName: "image", fileExtensions: "png", contentType: "image/png", result: { (data) in
+        NetworkManager.post("http://localhost:8080/MavenDemo/userApi", params: ["id":"12","method":"getUser"], result: { (data) in
             print(data)
         }) { (error) in
             print(error)
         }
+        
+        
         
     }
 
