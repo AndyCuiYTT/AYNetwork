@@ -14,6 +14,8 @@ class NetworkConfig: NSObject {
         return 30
     }
     
+   
+    
     class var configuration: URLSessionConfiguration {
         return URLSessionConfiguration.default
     }
@@ -27,6 +29,10 @@ class NetworkConfig: NSObject {
         }
         return path!
     }
+    
+    
+
+    
     
     
     

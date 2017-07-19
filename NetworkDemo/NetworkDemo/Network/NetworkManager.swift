@@ -14,6 +14,34 @@ import UIKit
 
 class NetworkManager: NSObject {
     
+    static var netStatus: Reachability.NetworkStatus = (Reachability()?.currentReachabilityStatus)!
+    static let reachability = Reachability()
+    
+    class func getNetStatus() -> Void{
+        
+        reachability?.whenReachable = { reachability in
+            if reachability.isReachableViaWiFi {
+                netStatus = .reachableViaWiFi
+            }else if reachability.isReachableViaWWAN {
+                netStatus = .reachableViaWWAN
+            }else if reachability.isReachable {
+                netStatus = .notReachable
+            }
+            print(NetworkManager.netStatus)
+        }
+        reachability?.whenUnreachable = { reachability in
+            netStatus = .notReachable
+            print(NetworkManager.netStatus)
+        }
+        
+        do {
+            try reachability?.startNotifier()
+        } catch  {
+            print("Unable to start notifier")
+        }
+        
+    }
+    
     
     /// post 请求
     ///
@@ -23,19 +51,22 @@ class NetworkManager: NSObject {
     ///   - result: 返回结果
     ///   - fail: 失败
     class func post(_ urlStr: String, params: [String : String], result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
-        var request = URLRequest.init(url: URL(string: urlStr)!)
+        
+        var request = URLRequest(url: URL(string: urlStr)!)
         request.timeoutInterval = NetworkConfig.timeoutInterval
         request.httpMethod = "POST"
+        
         
         var paramStr = String()
         for (key , value) in params {
             paramStr.append("\(key)=\(value)&")
         }
         paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
-        
+                
         request.httpBody = paramStr.data(using: .utf8)
         let session = URLSession(configuration: NetworkConfig.configuration)
         let task = session.dataTask(with: request) { (data, response, error) in
+            
             if error == nil {
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
                     result(value)
@@ -63,8 +94,10 @@ class NetworkManager: NSObject {
         for (key , value) in params {
             paramStr.append("\(key)=\(value)&")
         }
+                
         paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
         var request = URLRequest.init(url: URL(string: urlStr + "?" + paramStr)!)
+        request.timeoutInterval = NetworkConfig.timeoutInterval
         request.timeoutInterval = NetworkConfig.timeoutInterval
         request.httpMethod = "GET"
         

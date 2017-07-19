@@ -30,12 +30,6 @@ class ViewController: UIViewController {
 //        }
         
         
-        NetworkManager.post("http://localhost:8080/MavenDemo/userApi", params: ["id":"12","method":"getUser"], result: { (data) in
-            print(data)
-        }) { (error) in
-            print(error)
-        }
-        
         
         
     }
@@ -45,6 +39,18 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    @IBAction func test(_ sender: Any) {
+        
+        NetworkManager.post("http://localhost:8080/MavenDemo/userApi", params: ["id":"12","method":"getUser"],result: { (data) in
+            print(data)
+        }) { (error) in
+            print(error)
+        }
+        
+
+        
+        
+    }
 
 }
 
