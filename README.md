@@ -4,3 +4,4 @@
 
 ## NetworkDemo
 > 对系统网络请求封装
+> 添加 NetworkCache 类，对请求结果进行缓存处理
