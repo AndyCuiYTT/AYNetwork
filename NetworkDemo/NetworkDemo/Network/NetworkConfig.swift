@@ -9,12 +9,23 @@
 import UIKit
 
 class NetworkConfig: NSObject {
-
+    
+    
+    /// 请求超时时间
     class var timeoutInterval: TimeInterval {
         return 30
     }
     
-   
+    
+    /// 基地址
+    class var baseUrl: String {
+        return ""
+    }
+    
+    class var expirationTime: TimeInterval {
+        return 20
+    }
+    
     
     class var configuration: URLSessionConfiguration {
         return URLSessionConfiguration.default

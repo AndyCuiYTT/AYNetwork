@@ -48,26 +48,37 @@ class NetworkManager: NSObject {
     /// - Parameters:
     ///   - urlStr: 请求地址
     ///   - params: 请求参数
+    ///   - isCache: 是否需要缓存
     ///   - result: 返回结果
     ///   - fail: 失败
-    class func post(_ urlStr: String, params: [String : String], result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
+    class func post(_ urlStr: String, params: [String : String], isCache: Bool = false, result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
+        
+        if isCache {
+            if let cacheResult = NetworkCache.shareInstance().getResult(self.dicToMD5Str(params)) {
+                if let value = try? JSONSerialization.jsonObject(with: cacheResult.data(using: .utf8)!, options: .mutableContainers) {
+                    result(value)
+                }else {
+                    result (cacheResult)
+                }
+                return
+            }
+        }
         
         var request = URLRequest(url: URL(string: urlStr)!)
         request.timeoutInterval = NetworkConfig.timeoutInterval
         request.httpMethod = "POST"
-        
-        
         var paramStr = String()
         for (key , value) in params {
             paramStr.append("\(key)=\(value)&")
         }
         paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
-                
         request.httpBody = paramStr.data(using: .utf8)
         let session = URLSession(configuration: NetworkConfig.configuration)
         let task = session.dataTask(with: request) { (data, response, error) in
-            
             if error == nil {
+                if isCache {
+                    NetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: NetworkConfig.expirationTime))
+                }
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
                     result(value)
                 }else {
@@ -88,13 +99,26 @@ class NetworkManager: NSObject {
     ///   - params: 请求参数
     ///   - result: 返回结果
     ///   - fail: 失败
-    class func get(_ urlStr: String, params: [String : String], result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
+    class func get(_ urlStr: String, params: [String : String], isCache: Bool = false, result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
+        
+        // 查看缓存区，看是否有该数据缓存
+        if isCache {
+            if let cacheResult = NetworkCache.shareInstance().getResult(self.dicToMD5Str(params)) {
+                if let value = try? JSONSerialization.jsonObject(with: cacheResult.data(using: .utf8)!, options: .mutableContainers) {
+                    result(value)
+                }else {
+                    result (cacheResult)
+                }
+                return
+            }
+        }
+
         
         var paramStr = String()
         for (key , value) in params {
             paramStr.append("\(key)=\(value)&")
         }
-                
+        
         paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
         var request = URLRequest.init(url: URL(string: urlStr + "?" + paramStr)!)
         request.timeoutInterval = NetworkConfig.timeoutInterval
@@ -104,6 +128,9 @@ class NetworkManager: NSObject {
         let session = URLSession(configuration: NetworkConfig.configuration)
         let task = session.dataTask(with: request) { (data, response, error) in
             if error == nil {
+                if isCache {
+                    NetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: NetworkConfig.expirationTime))
+                }
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
                     result(value)
                 }else {
@@ -115,7 +142,7 @@ class NetworkManager: NSObject {
         }
         task.resume()
     }
-
+    
     
     
     /// 文件下载
@@ -201,3 +228,37 @@ class NetworkManager: NSObject {
         task.resume()
     }
 }
+
+
+// MARK: - String 扩展
+
+
+extension NetworkManager {
+    
+    private class func MD5(_ str: String) -> String {
+        let cChar = str.cString(using: .utf8)
+        let strLen = CUnsignedInt(str.lengthOfBytes(using: .utf8))
+        let result = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(CC_MD5_DIGEST_LENGTH))
+        CC_MD5(cChar, strLen, result)
+        let MD5Str = NSMutableString()
+        for i in 0 ..< Int(CC_MD5_DIGEST_LENGTH) {
+            MD5Str.appendFormat("%02x", result[i])
+        }
+        result.deinitialize()
+        return MD5Str as String
+    }
+    
+    private class func dicToJSONString(_ dic: [String : String]) -> String {
+        let jsonData = try! JSONSerialization.data(withJSONObject: dic, options: .prettyPrinted)
+        return String.init(data: jsonData, encoding: .utf8)!
+    }
+    
+    fileprivate class func dicToMD5Str(_ dic: [String : String]) -> String {
+        return self.MD5(self.dicToJSONString(dic))
+    }
+    
+    
+}
+
+
+
