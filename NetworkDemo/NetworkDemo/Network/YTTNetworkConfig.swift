@@ -1,6 +1,5 @@
 //
-//  NetworkConfig.swift
-//  NetworkDemo
+//  YTTNetworkConfig.swift
 //
 //  Created by Andy on 2017/7/17.
 //  Copyright © 2017年 AndyCuiYTT. All rights reserved.
@@ -8,7 +7,7 @@
 
 import UIKit
 
-class NetworkConfig: NSObject {
+class YTTNetworkConfig: NSObject {
     
     
     /// 请求超时时间
@@ -22,7 +21,13 @@ class NetworkConfig: NSObject {
         return ""
     }
     
+    /// 缓存有效时间
     class var expirationTime: TimeInterval {
+        return 3 * 60 * 60
+    }
+    
+    /// 刷新缓存时间
+    class var updateCacheTime: TimeInterval {
         return 20
     }
     

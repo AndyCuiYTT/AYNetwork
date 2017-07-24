@@ -1,6 +1,5 @@
 //
-//  NetworkCache.swift
-//  NetworkDemo
+//  YTTNetworkCache.swift
 //
 //  Created by Andy on 2017/7/19.
 //  Copyright © 2017年 AndyCuiYTT. All rights reserved.
@@ -26,15 +25,15 @@
 
 import UIKit
 
-class NetworkCache: NSObject {
+class YTTNetworkCache: NSObject {
     
     private var timer: Timer!
     
-    static var networkCache: NetworkCache = NetworkCache()
+    static var networkCache: YTTNetworkCache = YTTNetworkCache()
     
     private var dbQueue: FMDatabaseQueue!
     
-    class func shareInstance() -> NetworkCache {
+    class func shareInstance() -> YTTNetworkCache {
         return networkCache
     }
     
@@ -58,18 +57,16 @@ class NetworkCache: NSObject {
             db.close()
         }
         
-        timer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(checkDate), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: YTTNetworkConfig.updateCacheTime, target: self, selector: #selector(checkDate), userInfo: nil, repeats: true)
         
     }
     
     
     @objc private func checkDate() -> Void {
-        print("-----------------------------------")
         DispatchQueue.init(label: "com.andy.netcache").async {
             self.removeResult(withOldDate: Date().timeIntervalSince1970)
         }
     }
-    
     
     /// 根据 key 移除数据
     ///
@@ -80,12 +77,11 @@ class NetworkCache: NSObject {
             do{
                 try db.executeUpdate("delete from T_netCache where key = ?", values: [key])
             }catch {
-                print(error)
+                print("移除缓存数据失败，错误：\(error)")
             }
             db.close()
         }
     }
-    
     
     /// 移除全部数据
     func removeAllResults() -> Void {
@@ -94,7 +90,7 @@ class NetworkCache: NSObject {
             do{
                 try db.executeUpdate("delete from T_netCache", values: [])
             }catch {
-                print(error)
+                print("移除缓存数据失败，错误：\(error)")
             }
             db.close()
         }
@@ -110,12 +106,11 @@ class NetworkCache: NSObject {
             do{
                 try db.executeUpdate("delete from T_netCache where date < ?", values: [date])
             }catch {
-                print(error)
+                print("移除缓存数据失败，错误：\(error)")
             }
             db.close()
         }
     }
-    
     
     /// 添加数据
     ///
@@ -129,7 +124,7 @@ class NetworkCache: NSObject {
             do{
                 try db.executeUpdate("insert into T_netCache (key,value,date) values (?,?,?)", values: [key, result, date])
             }catch {
-                print(error)
+                print("添加缓存数据失败，错误：\(error)")
             }
             db.close()
         }
@@ -146,7 +141,6 @@ class NetworkCache: NSObject {
             db.close()
         }
     }
-    
     
     /// 获取数据
     ///
@@ -181,23 +175,6 @@ class NetworkCache: NSObject {
         timer.invalidate()
         timer = nil
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
 }

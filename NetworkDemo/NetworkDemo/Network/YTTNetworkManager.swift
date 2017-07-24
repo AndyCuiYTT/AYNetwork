@@ -1,6 +1,5 @@
 //
-//  NetworkManager.swift
-//  NetworkDemo
+//  YTTNetworkManager.swift
 //
 //  Created by Andy on 2017/7/17.
 //  Copyright © 2017年 AndyCuiYTT. All rights reserved.
@@ -12,7 +11,7 @@
  */
 import UIKit
 
-class NetworkManager: NSObject {
+class YTTNetworkManager: NSObject {
     
     static var netStatus: Reachability.NetworkStatus = (Reachability()?.currentReachabilityStatus)!
     static let reachability = Reachability()
@@ -27,11 +26,11 @@ class NetworkManager: NSObject {
             }else if reachability.isReachable {
                 netStatus = .notReachable
             }
-            print(NetworkManager.netStatus)
+            print(YTTNetworkManager.netStatus)
         }
         reachability?.whenUnreachable = { reachability in
             netStatus = .notReachable
-            print(NetworkManager.netStatus)
+            print(YTTNetworkManager.netStatus)
         }
         
         do {
@@ -54,7 +53,7 @@ class NetworkManager: NSObject {
     class func post(_ urlStr: String, params: [String : String], isCache: Bool = false, result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
         
         if isCache {
-            if let cacheResult = NetworkCache.shareInstance().getResult(self.dicToMD5Str(params)) {
+            if let cacheResult = YTTNetworkCache.shareInstance().getResult(self.dicToMD5Str(params)) {
                 if let value = try? JSONSerialization.jsonObject(with: cacheResult.data(using: .utf8)!, options: .mutableContainers) {
                     result(value)
                 }else {
@@ -65,7 +64,7 @@ class NetworkManager: NSObject {
         }
         
         var request = URLRequest(url: URL(string: urlStr)!)
-        request.timeoutInterval = NetworkConfig.timeoutInterval
+        request.timeoutInterval = YTTNetworkConfig.timeoutInterval
         request.httpMethod = "POST"
         var paramStr = String()
         for (key , value) in params {
@@ -73,11 +72,11 @@ class NetworkManager: NSObject {
         }
         paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
         request.httpBody = paramStr.data(using: .utf8)
-        let session = URLSession(configuration: NetworkConfig.configuration)
+        let session = URLSession(configuration: YTTNetworkConfig.configuration)
         let task = session.dataTask(with: request) { (data, response, error) in
             if error == nil {
                 if isCache {
-                    NetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: NetworkConfig.expirationTime))
+                    YTTNetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: YTTNetworkConfig.expirationTime))
                 }
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
                     result(value)
@@ -96,14 +95,15 @@ class NetworkManager: NSObject {
     ///
     /// - Parameters:
     ///   - urlStr: 请求地址
-    ///   - params: 请求参数
+    ///   - params: 请求参数    
+    ///   - isCache: 是否需要缓存
     ///   - result: 返回结果
     ///   - fail: 失败
     class func get(_ urlStr: String, params: [String : String], isCache: Bool = false, result: @escaping (Any) -> Void, fail: @escaping (Any) -> Void) {
         
         // 查看缓存区，看是否有该数据缓存
         if isCache {
-            if let cacheResult = NetworkCache.shareInstance().getResult(self.dicToMD5Str(params)) {
+            if let cacheResult = YTTNetworkCache.shareInstance().getResult(self.dicToMD5Str(params)) {
                 if let value = try? JSONSerialization.jsonObject(with: cacheResult.data(using: .utf8)!, options: .mutableContainers) {
                     result(value)
                 }else {
@@ -121,15 +121,15 @@ class NetworkManager: NSObject {
         
         paramStr.remove(at: paramStr.index(before: paramStr.endIndex))
         var request = URLRequest.init(url: URL(string: urlStr + "?" + paramStr)!)
-        request.timeoutInterval = NetworkConfig.timeoutInterval
-        request.timeoutInterval = NetworkConfig.timeoutInterval
+        request.timeoutInterval = YTTNetworkConfig.timeoutInterval
+        request.timeoutInterval = YTTNetworkConfig.timeoutInterval
         request.httpMethod = "GET"
         
-        let session = URLSession(configuration: NetworkConfig.configuration)
+        let session = URLSession(configuration: YTTNetworkConfig.configuration)
         let task = session.dataTask(with: request) { (data, response, error) in
             if error == nil {
                 if isCache {
-                    NetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: NetworkConfig.expirationTime))
+                    YTTNetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: YTTNetworkConfig.expirationTime))
                 }
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
                     result(value)
@@ -155,14 +155,13 @@ class NetworkManager: NSObject {
     class func download(_ urlStr: String, fileName: String, result: @escaping (String) -> Void, fail: @escaping (Any) -> Void) {
         
         let request = URLRequest.init(url: URL(string: urlStr)!)
-        let session = URLSession(configuration: NetworkConfig.configuration)
+        let session = URLSession(configuration: YTTNetworkConfig.configuration)
         let task = session.downloadTask(with: request) { (pathUrl, response, error) in
             if error == nil {
                 if let filePath: String = pathUrl?.path {
                     let fileManager = FileManager()
-                    try! fileManager.moveItem(atPath: filePath, toPath: NetworkConfig.downloadPath.appending(fileName))
-                    try! fileManager.removeItem(atPath: filePath)
-                    result(NetworkConfig.downloadPath.appending(fileName))
+                    try! fileManager.moveItem(atPath: filePath, toPath: YTTNetworkConfig.downloadPath.appending("\(Date().timeIntervalSince1970)"+fileName))
+                    result(YTTNetworkConfig.downloadPath.appending("\(Date().timeIntervalSince1970)"+fileName))
                 }
             }else {
                 fail(error.debugDescription)
@@ -210,10 +209,10 @@ class NetworkManager: NSObject {
         request.addValue("\(bodyData.count)", forHTTPHeaderField: "Content-Length")
         request.httpMethod = "POST"
         request.httpBody = bodyData
-        request.timeoutInterval = NetworkConfig.timeoutInterval
+        request.timeoutInterval = YTTNetworkConfig.timeoutInterval
         
         // 发起请求
-        let session = URLSession(configuration: NetworkConfig.configuration)
+        let session = URLSession(configuration: YTTNetworkConfig.configuration)
         let task = session.dataTask(with: request) { (data, response, error) in
             if error == nil {
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
@@ -230,10 +229,7 @@ class NetworkManager: NSObject {
 }
 
 
-// MARK: - String 扩展
-
-
-extension NetworkManager {
+extension YTTNetworkManager {
     
     private class func MD5(_ str: String) -> String {
         let cChar = str.cString(using: .utf8)

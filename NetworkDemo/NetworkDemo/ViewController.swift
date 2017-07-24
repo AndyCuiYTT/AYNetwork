@@ -41,7 +41,7 @@ class ViewController: UIViewController {
 
     @IBAction func test(_ sender: Any) {
         
-        NetworkManager.post("http://localhost:8080/MavenDemo/userApi", params: ["id":"12","method":"getUser"],result: { (data) in
+        YTTNetworkManager.post("http://localhost:8080/MavenDemo/userApi", params: ["id":"12","method":"getUser"], isCache: true, result: { (data) in
             print(data)
         }) { (error) in
             print(error)
