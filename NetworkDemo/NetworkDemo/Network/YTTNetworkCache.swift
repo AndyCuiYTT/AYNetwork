@@ -14,7 +14,7 @@
  *  数据缓存采用 SQLite 存储，采用 FMDB 库.
  *
  *  缓存数据表表数据有 key,value,date 三个字段. key: 网络请求参数 MD5加密数据. value:网络请求数据. date: 数据有效时间
- *  
+ *
  *  添加计时器,定时清除无效数据.
  *
  */
@@ -45,12 +45,13 @@ class YTTNetworkCache: NSObject {
             try! fileManager.createDirectory(atPath: path!, withIntermediateDirectories: true, attributes: nil)
         }
         path?.append("netcache.sqlite")
+        
         print(path ?? "")
         dbQueue = FMDatabaseQueue(path: path)
         dbQueue.inDatabase { (db) in
             db.open()
             do{
-                try db.executeUpdate("CREATE TABLE IF NOT EXISTS T_netCache(key varchar(20) PRIMARY KEY , value TEXT,date varchar(25))", values: nil)
+                try db.executeUpdate("CREATE TABLE IF NOT EXISTS T_netCache(key varchar(20) PRIMARY KEY , value TEXT,date varchar(25),verify varchar(16))", values: nil)
             }catch {
                 print(error)
             }
@@ -118,11 +119,11 @@ class YTTNetworkCache: NSObject {
     ///   - key: 键值
     ///   - result: 请求数据
     ///   - date: 有效时间
-    func addResult(_ key: String, result: String, date: TimeInterval) -> Void {
+    func addResult(_ key: String, result: String, date: TimeInterval, verify: String) -> Void {
         dbQueue.inDatabase { (db) in
             db.open()
             do{
-                try db.executeUpdate("insert into T_netCache (key,value,date) values (?,?,?)", values: [key, result, date])
+                try db.executeUpdate("insert into T_netCache (key,value,date,verify) values (?,?,?,?)", values: [key, result, date, verify])
             }catch {
                 print("添加缓存数据失败，错误：\(error)")
             }
@@ -130,11 +131,11 @@ class YTTNetworkCache: NSObject {
         }
     }
     
-    func updateResult(_ key: String, result: String, date: TimeInterval) -> Void {
+    func updateResult(_ key: String, result: String, date: TimeInterval, verify: String) -> Void {
         dbQueue.inDatabase { (db) in
             db.open()
             do{
-                try db.executeUpdate("update T_netCache set value = ? , date = ? where ket = ?", values: [result, date, key])
+                try db.executeUpdate("update T_netCache set value = ? , date = ?, verify = ? where key = ?", values: [result, date,verify, key])
             }catch {
                 print(error)
             }
@@ -148,12 +149,12 @@ class YTTNetworkCache: NSObject {
     /// - Returns: 数据
     func getResult(_ key: String) -> String? {
         
-        var result: (value: String , date: TimeInterval)?
+        var result: (value: String , date: TimeInterval, verify: String)?
         dbQueue.inDatabase { (db) in
             db.open()
             if let resultSet = try? db.executeQuery("select * from T_netCache where key = ?", values: [key]) {
-                if resultSet.next() {
-                    result = (resultSet.string(forColumn: "value"), resultSet.double(forColumn: "date")) as? (String, TimeInterval)
+                if (resultSet.next()) {
+                    result = (resultSet.string(forColumn: "value"), resultSet.double(forColumn: "date"), resultSet.string(forColumn: "verify")) as? (String, TimeInterval, String)
                 }
                 resultSet.close()
             }
@@ -162,7 +163,7 @@ class YTTNetworkCache: NSObject {
         
         if result != nil {
             
-            if (result?.date)! > Date().timeIntervalSince1970 {
+            if (result?.date)! > Date().timeIntervalSince1970 && YTTNetworkCache.MD5((result?.value)!) == result?.verify {
                 return result?.value
             }else {
                 self.removeResult(key)
@@ -174,7 +175,23 @@ class YTTNetworkCache: NSObject {
     deinit {
         timer.invalidate()
         timer = nil
+        dbQueue.close()
+        dbQueue = nil
     }
     
+    
+    class func MD5(_ str: String) -> String {
+        let cChar = str.cString(using: .utf8)
+        let strLen = CUnsignedInt(str.lengthOfBytes(using: .utf8))
+        let result = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(CC_MD5_DIGEST_LENGTH))
+        CC_MD5(cChar, strLen, result)
+        let MD5Str = NSMutableString()
+        for i in 0 ..< Int(CC_MD5_DIGEST_LENGTH) {
+            MD5Str.appendFormat("%02x", result[i])
+        }
+        result.deinitialize()
+        return MD5Str as String
+    }
+
     
 }

@@ -76,7 +76,7 @@ class YTTNetworkManager: NSObject {
         let task = session.dataTask(with: request) { (data, response, error) in
             if error == nil {
                 if isCache {
-                    YTTNetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: YTTNetworkConfig.expirationTime))
+                    YTTNetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: YTTNetworkConfig.expirationTime), verify: YTTNetworkCache.MD5(String.init(data: data!, encoding: .utf8)!))
                 }
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
                     result(value)
@@ -129,7 +129,7 @@ class YTTNetworkManager: NSObject {
         let task = session.dataTask(with: request) { (data, response, error) in
             if error == nil {
                 if isCache {
-                    YTTNetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: YTTNetworkConfig.expirationTime))
+                    YTTNetworkCache.shareInstance().addResult(self.dicToMD5Str(params), result: String.init(data: data!, encoding: .utf8)!, date: Date().timeIntervalSince1970.advanced(by: YTTNetworkConfig.expirationTime), verify: YTTNetworkCache.MD5(String.init(data: data!, encoding: .utf8)!))
                 }
                 if let value = try? JSONSerialization.jsonObject(with: data!, options: .mutableContainers) {
                     result(value)
@@ -231,26 +231,13 @@ class YTTNetworkManager: NSObject {
 
 extension YTTNetworkManager {
     
-    private class func MD5(_ str: String) -> String {
-        let cChar = str.cString(using: .utf8)
-        let strLen = CUnsignedInt(str.lengthOfBytes(using: .utf8))
-        let result = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(CC_MD5_DIGEST_LENGTH))
-        CC_MD5(cChar, strLen, result)
-        let MD5Str = NSMutableString()
-        for i in 0 ..< Int(CC_MD5_DIGEST_LENGTH) {
-            MD5Str.appendFormat("%02x", result[i])
-        }
-        result.deinitialize()
-        return MD5Str as String
-    }
-    
     private class func dicToJSONString(_ dic: [String : String]) -> String {
         let jsonData = try! JSONSerialization.data(withJSONObject: dic, options: .prettyPrinted)
         return String.init(data: jsonData, encoding: .utf8)!
     }
     
     fileprivate class func dicToMD5Str(_ dic: [String : String]) -> String {
-        return self.MD5(self.dicToJSONString(dic))
+        return YTTNetworkCache.MD5(self.dicToJSONString(dic))
     }
     
     
